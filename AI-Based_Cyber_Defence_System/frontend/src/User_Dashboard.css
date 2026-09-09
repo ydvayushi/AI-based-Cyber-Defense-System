@@ -1,0 +1,277 @@
+/* =========================
+   USER PROFILE DASHBOARD
+========================= */
+
+.profile-dashboard {
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* TOP SECTION */
+
+.profile-top {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+}
+
+/* PROFILE CARD */
+
+.profile-card {
+  background: white;
+  border-radius: 16px;
+  padding: 35px 25px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.profile-avatar {
+  font-size: 90px;
+  color: #2563eb;
+  margin-bottom: 12px;
+}
+
+.profile-card h2 {
+  margin: 5px 0;
+  color: #0f172a;
+  font-size: 24px;
+}
+
+.profile-card p {
+  color: #64748b;
+  margin: 8px 0 22px;
+  font-size: 15px;
+}
+
+.edit-profile {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 11px 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.edit-profile:hover {
+  background: #1d4ed8;
+}
+
+/* SECURITY OVERVIEW */
+
+.security-overview {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.security-overview h3 {
+  margin: 0 0 18px;
+  color: #0f172a;
+  font-size: 20px;
+}
+
+.security-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 17px 5px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.security-item:last-child {
+  border-bottom: none;
+}
+
+.security-item strong {
+  color: #2563eb;
+}
+
+.security-item .secure {
+  color: #16a34a;
+}
+
+/* ACCOUNT INFORMATION */
+
+.account-info {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.account-info h3 {
+  margin: 0 0 5px;
+  color: #0f172a;
+  font-size: 20px;
+}
+
+.account-info > p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.info-grid div {
+  background: #f8fafc;
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.info-grid span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.info-grid strong {
+  color: #0f172a;
+  font-size: 15px;
+}
+
+/* RECENT ACTIVITY */
+
+.activity-panel {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.activity-panel h3 {
+  margin: 0 0 5px;
+  color: #0f172a;
+  font-size: 20px;
+}
+
+.activity-panel > p {
+  color: #64748b;
+  margin: 0 0 15px;
+  font-size: 14px;
+}
+
+.activity {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 5px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.activity:last-child {
+  border-bottom: none;
+}
+
+.activity > span:first-child {
+  font-size: 25px;
+}
+
+.activity div {
+  flex: 1;
+}
+
+.activity strong {
+  display: block;
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.activity small {
+  display: block;
+  color: #64748b;
+  margin-top: 5px;
+}
+
+.activity label {
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* =========================
+   DARK MODE
+========================= */
+
+.dark .profile-card,
+.dark .security-overview,
+.dark .account-info,
+.dark .activity-panel {
+  background: #1e293b;
+}
+
+.dark .profile-card h2,
+.dark .security-overview h3,
+.dark .account-info h3,
+.dark .activity-panel h3,
+.dark .info-grid strong,
+.dark .activity strong {
+  color: #f8fafc;
+}
+
+.dark .profile-card p,
+.dark .account-info > p,
+.dark .activity-panel > p,
+.dark .info-grid span,
+.dark .activity small,
+.dark .activity label {
+  color: #94a3b8;
+}
+
+.dark .security-item {
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+.dark .info-grid div {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.dark .activity {
+  border-color: #334155;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+
+  .profile-top {
+    grid-template-columns: 1fr;
+  }
+
+  .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .activity {
+    align-items: flex-start;
+  }
+
+  .activity label {
+    display: none;
+  }
+
+}
