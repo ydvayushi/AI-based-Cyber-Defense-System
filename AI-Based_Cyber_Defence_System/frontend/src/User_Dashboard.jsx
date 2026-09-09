@@ -1,6 +1,6 @@
 import React from "react";
 import { FaUserCircle } from "react-icons/fa";
-import "./UserProfile.css";
+import "./User_Dashboard.css";
 
 function UserProfile() {
   return (

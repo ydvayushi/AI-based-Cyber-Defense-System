@@ -22,10 +22,13 @@ import {
   FaBug,
   FaLock,
 } from "react-icons/fa";
-
+import UserDashboard from "./User_Dashboard";
+import Login from "./Login";
+import "./App.css";
 import "./App.css";
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [darkMode, setDarkMode] = useState(false);
   const [dataset, setDataset] = useState(null);
@@ -355,6 +358,10 @@ function App() {
       name: "Security Alerts",
       icon: <FaExclamationTriangle />,
     },
+    {
+  name: "User Profile",
+  icon: <FaUserCircle />,
+},
   ];
 
   /*
@@ -390,6 +397,11 @@ function App() {
     "#f59e0b",
     "#06b6d4",
   ];
+  if (!isLoggedIn) {
+  return (
+    <Login onLogin={() => setIsLoggedIn(true)} />
+  );
+}
 
   return (
     <div className={darkMode ? "app dark-mode" : "app"}>
@@ -457,7 +469,10 @@ function App() {
               <small>Administrator</small>
             </div>
 
-            <FaUserCircle className="user" />
+           <FaUserCircle
+  className="user"
+  onClick={() => setActiveMenu("User Profile")}
+/>
           </div>
         </div>
 
@@ -1214,6 +1229,11 @@ function App() {
             </div>
           </div>
         )}
+        {/* USER PROFILE */}
+
+{activeMenu === "User Profile" && (
+  <UserDashboard />
+)}
       </main>
     </div>
   );
