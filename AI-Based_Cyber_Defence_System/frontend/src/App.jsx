@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FaShieldAlt,
   FaHome,
@@ -25,7 +25,6 @@ import {
 import UserDashboard from "./User_Dashboard";
 import Login from "./Login";
 import "./App.css";
-import "./App.css";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -35,6 +34,32 @@ function App() {
   const [datasetRows, setDatasetRows] = useState([]);
   const [search, setSearch] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
+  const [datasetStats, setDatasetStats] = useState(null);
+  const [modelStats, setModelStats] = useState(null);
+  useEffect(() => {
+  fetch("http://localhost:5000/api/dataset/stats")
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === "success") {
+        setDatasetStats(data);
+      }
+    })
+    .catch((error) => {
+      console.error("Error connecting to backend:", error);
+    });
+}, []);
+useEffect(() => {
+  fetch("http://localhost:5000/api/model-info")
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.accuracy !== undefined) {
+        setModelStats(data);
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching model information:", error);
+    });
+}, []);
 
   /*
    * Default dashboard data
@@ -489,9 +514,12 @@ function App() {
                 <p>Total Network Records</p>
 
                 <h2>
-                  {datasetRows.length
+                  {datasetStats
+                    ? datasetStats.totalRows.toLocaleString()
+                    : datasetRows.length
                     ? datasetRows.length.toLocaleString()
-                    : "1,250"}
+                    : "Loading..."
+                    }
                 </h2>
 
                 <span>
@@ -507,9 +535,11 @@ function App() {
                 <p>Threats Detected</p>
 
                 <h2>
-                  {datasetRows.length
+                  {datasetStats
+                    ? (datasetStats.totalRows - datasetStats.normal).toLocaleString()
+                    : datasetRows.length
                     ? detectedThreats.toLocaleString()
-                    : "45"}
+                    : "Loading..."}
                 </h2>
 
                 <span>Potential malicious activities</span>
@@ -521,9 +551,11 @@ function App() {
                 <p>Normal Traffic</p>
 
                 <h2>
-                  {datasetRows.length
+                  {datasetStats
+                    ? datasetStats.normal.toLocaleString()
+                    : datasetRows.length
                     ? normalTraffic.toLocaleString()
-                    : "1,205"}
+                    : "Loading..."}
                 </h2>
 
                 <span>Traffic classified as safe</span>
@@ -534,7 +566,11 @@ function App() {
 
                 <p>AI Model Accuracy</p>
 
-                <h2>96.8%</h2>
+                <h2>
+                {modelStats
+                 ? `${modelStats.accuracy}%`
+                 : "Loading..."}
+                </h2>
 
                 <span>Current model performance</span>
               </div>
