@@ -29,8 +29,8 @@ import "./App.css";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState({
-    name: "Security Analyst",
-    email: "analyst@cyberdefence.com",
+    name: "Arshiya",
+    email: "arshiya@cyberdefence.com",
   });
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [darkMode, setDarkMode] = useState(false);
@@ -107,9 +107,9 @@ function App() {
   ];
 
   /*
-   * Security alerts
+   * Default alert template
    */
-  const [alerts, setAlerts] = useState([
+  const defaultAlertsList = [
     {
       source: "192.168.1.20",
       attack: "DoS Attack",
@@ -134,9 +134,97 @@ function App() {
       severity: "Safe",
       status: "Allowed",
     },
-  ]);
+  ];
 
+  /*
+   * Security alerts (Member 2 Deliverable)
+   */
+  const [alerts, setAlerts] = useState(defaultAlertsList);
   const [severityFilter, setSeverityFilter] = useState("All");
+
+  const fetchAlerts = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/alerts");
+      const data = await response.json();
+      if (data.status === "success" && Array.isArray(data.alerts) && data.alerts.length > 0) {
+        setAlerts(data.alerts);
+      }
+    } catch (error) {
+      console.error("Error fetching security alerts:", error);
+    }
+  };
+
+  const handleDeleteAlert = async (id, index) => {
+    if (id) {
+      try {
+        await fetch(`http://localhost:5000/api/alerts/${id}`, {
+          method: "DELETE",
+        });
+      } catch (error) {
+        console.error("Error deleting alert:", error);
+      }
+    }
+    setAlerts((prev) =>
+      prev.filter((a, i) => (a._id ? a._id !== id : i !== index))
+    );
+  };
+
+  const handleCreateTestAlert = async () => {
+    const randomOctet = Math.floor(Math.random() * 200 + 10);
+    const attackOptions = [
+      { attack: "DDoS SYN Flood", severity: "Critical" },
+      { attack: "SQL Injection Probe", severity: "High" },
+      { attack: "Brute Force SSH Attempt", severity: "Medium" },
+      { attack: "Port Scan Activity", severity: "High" },
+    ];
+    const picked =
+      attackOptions[Math.floor(Math.random() * attackOptions.length)];
+    try {
+      const res = await fetch("http://localhost:5000/api/alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: `192.168.1.${randomOctet}`,
+          attack: picked.attack,
+          severity: picked.severity,
+          status: "Detected",
+        }),
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        fetchAlerts();
+      }
+    } catch (err) {
+      console.error("Failed to create alert:", err);
+    }
+  };
+
+  /*
+   * Prediction History (Member 2 Deliverable)
+   */
+  const [predictionHistory, setPredictionHistory] = useState([]);
+  const [historyFilter, setHistoryFilter] = useState("All");
+
+  const fetchPredictionHistory = async (filter = historyFilter) => {
+    try {
+      const url =
+        filter && filter !== "All"
+          ? `http://localhost:5000/api/predictions/history?result=${filter}`
+          : "http://localhost:5000/api/predictions/history";
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.status === "success" && Array.isArray(data.predictions)) {
+        setPredictionHistory(data.predictions);
+      }
+    } catch (error) {
+      console.error("Error fetching prediction history:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAlerts();
+    fetchPredictionHistory();
+  }, []);
 
   /*
    * Filter security alerts
@@ -232,18 +320,9 @@ function App() {
       const data = await res.json();
       if (data.status === "success") {
         setSinglePrediction(data);
-        if (data.result === "Attack") {
-          const newAlert = {
-            source: `192.168.1.${Math.floor(Math.random() * 200 + 10)}`,
-            attack: `${data.attackType} Attack`,
-            severity:
-              data.attackType === "DoS" || data.attackType === "U2R"
-                ? "Critical"
-                : "High",
-            status: "Detected",
-          };
-          setAlerts((prev) => [newAlert, ...prev]);
-        }
+        // Refresh alerts and prediction history directly from backend database
+        fetchAlerts();
+        fetchPredictionHistory();
       } else {
         alert(data.message || "Prediction failed");
       }
@@ -1080,7 +1159,7 @@ function App() {
                     {filteredAlerts.length > 0 ? (
                       filteredAlerts.map(
                         (alert, index) => (
-                          <tr key={index}>
+                          <tr key={alert._id || index}>
                             <td>
                               {alert.source}
                             </td>
@@ -1478,6 +1557,96 @@ function App() {
                 </div>
               </div>
             )}
+
+            {/* PREDICTION HISTORY LOG (Member 2 Deliverable) */}
+            <div className="panel" style={{ marginTop: "24px" }}>
+              <div className="panel-title">
+                <div>
+                  <h3>Prediction History ({predictionHistory.length})</h3>
+                  <p>Real-time audit log of past network traffic classifications from MongoDB</p>
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {["All", "Attack", "Normal"].map((filter) => (
+                    <button
+                      key={filter}
+                      onClick={() => {
+                        setHistoryFilter(filter);
+                        fetchPredictionHistory(filter);
+                      }}
+                      style={{
+                        padding: "6px 14px",
+                        borderRadius: "20px",
+                        fontSize: "12px",
+                        cursor: "pointer",
+                        border: "1px solid #cbd5e1",
+                        fontWeight: historyFilter === filter ? "bold" : "normal",
+                        background: historyFilter === filter ? "#2563eb" : "transparent",
+                        color: historyFilter === filter ? "#ffffff" : "inherit",
+                      }}
+                    >
+                      {filter}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => fetchPredictionHistory()}
+                    style={{
+                      padding: "6px 14px",
+                      borderRadius: "20px",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      border: "1px solid #cbd5e1",
+                      background: "transparent",
+                      color: "inherit",
+                    }}
+                  >
+                    Refresh
+                  </button>
+                </div>
+              </div>
+
+              <div className="table-wrapper" style={{ marginTop: "12px" }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Protocol</th>
+                      <th>Service</th>
+                      <th>Result</th>
+                      <th>Category</th>
+                      <th>Confidence</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {predictionHistory.length > 0 ? (
+                      predictionHistory.map((pred, idx) => (
+                        <tr key={pred._id || idx}>
+                          <td style={{ fontSize: "12px", color: "#64748b" }}>
+                            {pred.timestamp ? new Date(pred.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "Just now"}
+                          </td>
+                          <td style={{ textTransform: "uppercase", fontWeight: "600" }}>
+                            {pred.protocol}
+                          </td>
+                          <td>{pred.service}</td>
+                          <td>
+                            <span className={pred.result === "Normal" ? "safe" : "critical"}>
+                              {pred.result}
+                            </span>
+                          </td>
+                          <td className="attack-name">{pred.attackType}</td>
+                          <td>{pred.confidence !== undefined ? `${(pred.confidence * 100).toFixed(1)}%` : "N/A"}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="no-results">
+                          No predictions recorded yet. Test network packets above to generate predictions!
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1506,6 +1675,25 @@ function App() {
                 </div>
 
                 <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <button
+                    onClick={handleCreateTestAlert}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      background: "rgba(16, 185, 129, 0.15)",
+                      color: "#10b981",
+                      border: "1px solid #10b981",
+                      borderRadius: "8px",
+                      padding: "8px 14px",
+                      cursor: "pointer",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    + Add Alert
+                  </button>
+
                   <button
                     onClick={exportAlertsCSV}
                     style={{
@@ -1581,34 +1769,65 @@ function App() {
                     <th>Attack</th>
                     <th>Severity</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {filteredAlerts.map(
-                    (alert, index) => (
-                      <tr key={index}>
-                        <td>{alert.source}</td>
+                  {filteredAlerts.length > 0 ? (
+                    filteredAlerts.map(
+                      (alert, index) => (
+                        <tr key={alert._id || index}>
+                          <td>{alert.source}</td>
 
-                        <td className="attack-name">
-                          {alert.attack}
-                        </td>
+                          <td className="attack-name">
+                            {alert.attack}
+                          </td>
 
-                        <td>
-                          <span
-                            className={
-                              alert.severity.toLowerCase()
-                            }
-                          >
-                            {alert.severity}
-                          </span>
-                        </td>
+                          <td>
+                            <span
+                              className={
+                                alert.severity.toLowerCase()
+                              }
+                            >
+                              {alert.severity}
+                            </span>
+                          </td>
 
-                        <td className="status-cell">
-                          {alert.status}
-                        </td>
-                      </tr>
+                          <td className="status-cell">
+                            {alert.status}
+                          </td>
+
+                          <td>
+                            <button
+                              title="Delete alert"
+                              onClick={() => handleDeleteAlert(alert._id, index)}
+                              style={{
+                                border: "none",
+                                background: "rgba(239, 68, 68, 0.12)",
+                                color: "#ef4444",
+                                cursor: "pointer",
+                                padding: "6px 10px",
+                                borderRadius: "6px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                fontSize: "12px",
+                                fontWeight: "600",
+                              }}
+                            >
+                              <FaTrash /> Delete
+                            </button>
+                          </td>
+                        </tr>
+                      )
                     )
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="no-results">
+                        No security alerts found.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>

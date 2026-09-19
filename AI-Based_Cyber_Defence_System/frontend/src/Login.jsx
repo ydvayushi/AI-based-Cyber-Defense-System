@@ -31,7 +31,7 @@ function Login({ onLogin }) {
         setMessage("");
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.email || !formData.password) {
@@ -50,21 +50,61 @@ function Login({ onLogin }) {
                 return;
             }
 
-            setMessage("Account created successfully!");
-            setTimeout(() => {
-                setIsSignUp(false);
-                setMessage("");
-            }, 1000);
-
+            try {
+                const res = await fetch("http://localhost:5000/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: formData.name,
+                        email: formData.email,
+                        password: formData.password,
+                        role: "Security Analyst",
+                    }),
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    setMessage("Account created in database! Switching to login...");
+                    setTimeout(() => {
+                        setIsSignUp(false);
+                        setMessage("");
+                    }, 1200);
+                } else {
+                    setMessage(data.message || "Registration failed.");
+                }
+            } catch (err) {
+                setMessage("Unable to connect to auth server.");
+            }
             return;
         }
 
-        // Frontend login authentication
-        const displayName = formData.name || formData.email.split("@")[0] || "Security Analyst";
-        onLogin({
-            name: displayName,
-            email: formData.email || "analyst@cyberdefence.com"
-        });
+        // Login
+        try {
+            const res = await fetch("http://localhost:5000/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password,
+                }),
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                setMessage("Login successful!");
+                setTimeout(() => {
+                    onLogin(data.user);
+                }, 400);
+            } else {
+                setMessage(data.message || "Invalid credentials.");
+            }
+        } catch (err) {
+            // Fallback if backend server unreachable
+            const displayName =
+                formData.name || formData.email.split("@")[0] || "Security Analyst";
+            onLogin({
+                name: displayName,
+                email: formData.email || "analyst@cyberdefence.com",
+            });
+        }
     };
 
     return (
