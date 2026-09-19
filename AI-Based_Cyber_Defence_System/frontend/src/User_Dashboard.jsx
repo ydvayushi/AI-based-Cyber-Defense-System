@@ -2,7 +2,7 @@ import React from "react";
 import { FaUserCircle } from "react-icons/fa";
 import "./User_Dashboard.css";
 
-function UserProfile() {
+function UserProfile({ user, onLogout }) {
   return (
     <div className="profile-dashboard">
 
@@ -13,12 +13,32 @@ function UserProfile() {
             <FaUserCircle />
           </div>
 
-          <h2>Security Analyst</h2>
+          <h2>{user?.name || "Security Analyst"}</h2>
           <p>Administrator</p>
 
           <button className="edit-profile">
             Edit Profile
           </button>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              style={{
+                marginTop: "12px",
+                background: "#ef4444",
+                color: "#ffffff",
+                border: "none",
+                padding: "10px 16px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: "600",
+                width: "100%",
+                transition: "background 0.2s ease"
+              }}
+            >
+              Sign Out
+            </button>
+          )}
         </div>
 
         <div className="security-overview">
@@ -55,12 +75,12 @@ function UserProfile() {
 
           <div>
             <span>Full Name</span>
-            <strong>Security Analyst</strong>
+            <strong>{user?.name || "Security Analyst"}</strong>
           </div>
 
           <div>
             <span>Email</span>
-            <strong>analyst@cyberdefence.com</strong>
+            <strong>{user?.email || "analyst@cyberdefence.com"}</strong>
           </div>
 
           <div>

@@ -59,8 +59,12 @@ function Login({ onLogin }) {
             return;
         }
 
-        // Currently frontend-only login
-        onLogin();
+        // Frontend login authentication
+        const displayName = formData.name || formData.email.split("@")[0] || "Security Analyst";
+        onLogin({
+            name: displayName,
+            email: formData.email || "analyst@cyberdefence.com"
+        });
     };
 
     return (
