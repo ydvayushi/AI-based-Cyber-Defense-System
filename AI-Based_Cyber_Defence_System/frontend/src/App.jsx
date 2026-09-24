@@ -1840,6 +1840,7 @@ function App() {
   <UserDashboard
     user={currentUser}
     onLogout={() => setIsLoggedIn(false)}
+    onUpdateUser={(updated) => setCurrentUser((prev) => ({ ...prev, ...updated }))}
   />
 )}
       </main>

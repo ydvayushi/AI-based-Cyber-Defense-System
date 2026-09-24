@@ -373,6 +373,91 @@ app.delete("/api/auth/users/:id", async (req, res) => {
     }
 });
 
+// Update User Profile
+app.put("/api/auth/profile", async (req, res) => {
+    try {
+        const { currentEmail, name, email, role, password } = req.body;
+        if (!currentEmail) {
+            return res.status(400).json({
+                status: "error",
+                message: "Current user email is required to identify the account."
+            });
+        }
+
+        const updateData = {};
+        if (name && name.trim()) updateData.name = name.trim();
+        if (email && email.trim()) updateData.email = email.trim().toLowerCase();
+        if (role && role.trim()) updateData.role = role.trim();
+        if (password && password.trim().length > 0) {
+            updateData.password = await bcrypt.hash(password.trim(), 10);
+        }
+
+        if (isDbConnected) {
+            // Check if user is changing email and that new email already exists
+            if (updateData.email && updateData.email !== currentEmail.toLowerCase()) {
+                const existing = await User.findOne({ email: updateData.email });
+                if (existing) {
+                    return res.status(400).json({
+                        status: "error",
+                        message: "That email is already registered to another account."
+                    });
+                }
+            }
+
+            const updatedUser = await User.findOneAndUpdate(
+                { email: currentEmail.toLowerCase() },
+                { $set: updateData },
+                { new: true, select: "-password" }
+            );
+
+            if (!updatedUser) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "User account not found in database."
+                });
+            }
+
+            return res.json({
+                status: "success",
+                message: "Profile updated successfully!",
+                user: updatedUser
+            });
+        } else {
+            // In-memory store fallback
+            const userIndex = memoryUsers.findIndex(
+                (u) => u.email.toLowerCase() === currentEmail.toLowerCase()
+            );
+            if (userIndex === -1) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "User account not found."
+                });
+            }
+
+            if (updateData.name) memoryUsers[userIndex].name = updateData.name;
+            if (updateData.email) memoryUsers[userIndex].email = updateData.email;
+            if (updateData.role) memoryUsers[userIndex].role = updateData.role;
+            if (updateData.password) memoryUsers[userIndex].password = updateData.password;
+
+            const safeUser = { ...memoryUsers[userIndex] };
+            delete safeUser.password;
+
+            return res.json({
+                status: "success",
+                message: "Profile updated successfully!",
+                user: safeUser
+            });
+        }
+    } catch (error) {
+        console.error("Update profile error:", error);
+        return res.status(500).json({
+            status: "error",
+            message: "Failed to update profile: " + error.message
+        });
+    }
+});
+
+
 // ==============================
 // Basic Status Routes
 // ==============================
