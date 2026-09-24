@@ -142,6 +142,70 @@ function App() {
   const [alerts, setAlerts] = useState(defaultAlertsList);
   const [severityFilter, setSeverityFilter] = useState("All");
 
+  /*
+   * Live Notifications System
+   */
+  const [notifications, setNotifications] = useState([
+    {
+      id: "notif-1",
+      title: "Critical Threat: DoS Attack Detected",
+      message: "High-volume SYN flood logged from 192.168.1.20",
+      severity: "Critical",
+      time: "10 mins ago",
+      read: false,
+    },
+    {
+      id: "notif-2",
+      title: "High Risk: Port Scan Activity",
+      message: "Rapid port probe detected from 192.168.1.35",
+      severity: "High",
+      time: "25 mins ago",
+      read: false,
+    },
+    {
+      id: "notif-3",
+      title: "AI Model Engine Active",
+      message: "Random Forest multi-class detector online (99.88% accuracy)",
+      severity: "Safe",
+      time: "1 hr ago",
+      read: true,
+    },
+    {
+      id: "notif-4",
+      title: "Database Synchronized",
+      message: "Connected to MongoDB database 'cyber_defence'",
+      severity: "Safe",
+      time: "2 hrs ago",
+      read: true,
+    },
+  ]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [toastNotification, setToastNotification] = useState(null);
+
+  const triggerNotification = (notif) => {
+    const newNotif = {
+      id: "notif-" + Date.now(),
+      time: "Just now",
+      read: false,
+      ...notif,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+    setToastNotification(newNotif);
+    setTimeout(() => {
+      setToastNotification((curr) => (curr?.id === newNotif.id ? null : curr));
+    }, 4500);
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
+
   const fetchAlerts = async () => {
     try {
       const response = await fetch("http://localhost:5000/api/alerts");
@@ -193,6 +257,11 @@ function App() {
       const data = await res.json();
       if (data.status === "success") {
         fetchAlerts();
+        triggerNotification({
+          title: `🚨 ${picked.severity} Alert: ${picked.attack}`,
+          message: `Manual threat logged from 192.168.1.${randomOctet}`,
+          severity: picked.severity,
+        });
       }
     } catch (err) {
       console.error("Failed to create alert:", err);
@@ -323,6 +392,20 @@ function App() {
         // Refresh alerts and prediction history directly from backend database
         fetchAlerts();
         fetchPredictionHistory();
+
+        if (data.result === "Attack") {
+          triggerNotification({
+            title: `⚠️ Threat Detected: ${data.attackType} Attack`,
+            message: `Packet classified as ${data.attackType} with ${(data.confidence * 100).toFixed(0)}% model confidence.`,
+            severity: data.attackType === "DoS" ? "Critical" : data.attackType === "Probe" ? "High" : "Medium",
+          });
+        } else {
+          triggerNotification({
+            title: `🛡️ Clean Packet Verified`,
+            message: `Normal traffic packet verified with ${(data.confidence * 100).toFixed(0)}% confidence.`,
+            severity: "Safe",
+          });
+        }
       } else {
         alert(data.message || "Prediction failed");
       }
@@ -670,8 +753,63 @@ function App() {
       {/* MAIN */}
 
       <main className="main">
-        {/* NAVBAR */}
+        {/* REAL-TIME FLOATING TOAST NOTIFICATION */}
+        {toastNotification && (
+          <div
+            style={{
+              position: "fixed",
+              top: "24px",
+              right: "24px",
+              zIndex: 10000,
+              background:
+                toastNotification.severity === "Critical"
+                  ? "#dc2626"
+                  : toastNotification.severity === "High"
+                  ? "#ea580c"
+                  : toastNotification.severity === "Medium"
+                  ? "#2563eb"
+                  : "#16a34a",
+              color: "#ffffff",
+              padding: "14px 20px",
+              borderRadius: "12px",
+              boxShadow: "0 12px 35px rgba(0, 0, 0, 0.35)",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              maxWidth: "420px",
+              animation: "fadeIn 0.25s ease-in-out",
+            }}
+          >
+            <div style={{ fontSize: "22px", display: "flex", alignItems: "center" }}>
+              {toastNotification.severity === "Critical" || toastNotification.severity === "High" ? (
+                <FaExclamationTriangle />
+              ) : (
+                <FaShieldAlt />
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: "700", fontSize: "14px" }}>{toastNotification.title}</div>
+              <div style={{ fontSize: "12px", opacity: 0.9, marginTop: "2px" }}>{toastNotification.message}</div>
+            </div>
+            <button
+              onClick={() => setToastNotification(null)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#ffffff",
+                cursor: "pointer",
+                padding: "4px",
+                display: "flex",
+                alignItems: "center",
+                opacity: 0.8,
+              }}
+            >
+              <FaTimesCircle style={{ fontSize: "16px" }} />
+            </button>
+          </div>
+        )}
 
+        {/* NAVBAR */}
         <div className="navbar">
           <div>
             <h1>AI Based Cyber Defence</h1>
@@ -680,12 +818,240 @@ function App() {
             </p>
           </div>
 
-          <div className="profile">
-            <FaBell className="bell" />
+          <div className="profile" style={{ position: "relative" }}>
+            {/* NOTIFICATION BELL WITH BADGE & DROPDOWN */}
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setShowNotifications((prev) => !prev)}
+                title="Notifications"
+                style={{
+                  background: showNotifications ? "rgba(37, 99, 235, 0.15)" : "transparent",
+                  border: "none",
+                  borderRadius: "50%",
+                  padding: "8px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                  transition: "background 0.2s ease",
+                }}
+              >
+                <FaBell
+                  className="bell"
+                  style={{
+                    margin: 0,
+                    fontSize: "20px",
+                    color: showNotifications ? "#2563eb" : darkMode ? "#cbd5e1" : "#475569",
+                  }}
+                />
+                {unreadNotificationsCount > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "2px",
+                      right: "2px",
+                      background: "#ef4444",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      fontWeight: "700",
+                      borderRadius: "10px",
+                      minWidth: "18px",
+                      height: "18px",
+                      padding: "0 4px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: "0 0 8px rgba(239, 68, 68, 0.6)",
+                    }}
+                  >
+                    {unreadNotificationsCount > 9 ? "9+" : unreadNotificationsCount}
+                  </span>
+                )}
+              </button>
+
+              {/* NOTIFICATIONS DROPDOWN PANEL */}
+              {showNotifications && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "48px",
+                    right: "0",
+                    width: "360px",
+                    maxWidth: "90vw",
+                    backgroundColor: darkMode ? "#1e293b" : "#ffffff",
+                    color: darkMode ? "#f8fafc" : "#0f172a",
+                    borderRadius: "14px",
+                    boxShadow: "0 20px 45px rgba(0, 0, 0, 0.25)",
+                    border: darkMode ? "1px solid #334155" : "1px solid #e2e8f0",
+                    zIndex: 9999,
+                    overflow: "hidden",
+                    animation: "fadeIn 0.2s ease-in-out",
+                  }}
+                >
+                  {/* Dropdown Header */}
+                  <div
+                    style={{
+                      padding: "14px 18px",
+                      borderBottom: darkMode ? "1px solid #334155" : "1px solid #f1f5f9",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      background: darkMode ? "#0f172a" : "#f8fafc",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <strong style={{ fontSize: "14px" }}>Notifications</strong>
+                      {unreadNotificationsCount > 0 && (
+                        <span
+                          style={{
+                            background: "rgba(239, 68, 68, 0.15)",
+                            color: "#ef4444",
+                            fontSize: "11px",
+                            fontWeight: "700",
+                            padding: "2px 8px",
+                            borderRadius: "10px",
+                          }}
+                        >
+                          {unreadNotificationsCount} new
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                      <button
+                        onClick={markAllNotificationsAsRead}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#2563eb",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                          fontWeight: "600",
+                          padding: 0,
+                        }}
+                      >
+                        Read all
+                      </button>
+                      <span style={{ color: "#94a3b8" }}>•</span>
+                      <button
+                        onClick={clearAllNotifications}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#94a3b8",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                          fontWeight: "500",
+                          padding: 0,
+                        }}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Notifications List */}
+                  <div style={{ maxHeight: "360px", overflowY: "auto" }}>
+                    {notifications.length === 0 ? (
+                      <div style={{ padding: "30px 20px", textAlign: "center", color: "#94a3b8" }}>
+                        <FaCheckCircle style={{ fontSize: "32px", color: "#10b981", marginBottom: "8px" }} />
+                        <p style={{ margin: 0, fontSize: "14px", fontWeight: "600", color: darkMode ? "#e2e8f0" : "#334155" }}>
+                          All caught up!
+                        </p>
+                        <small style={{ fontSize: "12px" }}>No active security alerts or notifications</small>
+                      </div>
+                    ) : (
+                      notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          onClick={() => {
+                            setNotifications((prev) =>
+                              prev.map((item) => (item.id === n.id ? { ...item, read: true } : item))
+                            );
+                          }}
+                          style={{
+                            padding: "12px 18px",
+                            borderBottom: darkMode ? "1px solid #334155" : "1px solid #f1f5f9",
+                            backgroundColor: n.read
+                              ? "transparent"
+                              : darkMode
+                              ? "rgba(37, 99, 235, 0.12)"
+                              : "rgba(37, 99, 235, 0.05)",
+                            borderLeft: `4px solid ${
+                              n.severity === "Critical"
+                                ? "#ef4444"
+                                : n.severity === "High"
+                                ? "#f59e0b"
+                                : n.severity === "Medium"
+                                ? "#3b82f6"
+                                : "#10b981"
+                            }`,
+                            cursor: "pointer",
+                            transition: "background 0.15s ease",
+                          }}
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
+                            <strong
+                              style={{
+                                fontSize: "13px",
+                                color:
+                                  n.severity === "Critical"
+                                    ? "#ef4444"
+                                    : n.severity === "High"
+                                    ? "#f59e0b"
+                                    : darkMode
+                                    ? "#f1f5f9"
+                                    : "#0f172a",
+                              }}
+                            >
+                              {n.title}
+                            </strong>
+                            <small style={{ fontSize: "11px", color: "#94a3b8", whiteSpace: "nowrap" }}>
+                              {n.time}
+                            </small>
+                          </div>
+                          <p style={{ margin: "4px 0 0", fontSize: "12px", color: darkMode ? "#cbd5e1" : "#64748b", lineHeight: "1.4" }}>
+                            {n.message}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Dropdown Footer */}
+                  <div
+                    style={{
+                      padding: "10px 18px",
+                      background: darkMode ? "#0f172a" : "#f8fafc",
+                      borderTop: darkMode ? "1px solid #334155" : "1px solid #f1f5f9",
+                      textAlign: "center",
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        setShowNotifications(false);
+                        setActiveMenu("Security Alerts");
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#2563eb",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        padding: "4px",
+                      }}
+                    >
+                      View All Security Alerts →
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="profile-info">
               <strong>{currentUser.name}</strong>
-              <small>Administrator</small>
+              <small>{currentUser.role || "Administrator"}</small>
             </div>
 
             <FaUserCircle
