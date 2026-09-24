@@ -924,12 +924,12 @@ function App() {
                   <FaUpload />
                   Choose CSV File
 
-                  <input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleDatasetUpload}
-                    hidden
-                  />
+                    <input
+                      type="file"
+                      accept=".csv, .txt"
+                      onChange={handleDatasetUpload}
+                      hidden
+                    />
                 </label>
 
                 <button
@@ -1303,7 +1303,7 @@ function App() {
 
                 <input
                   type="file"
-                  accept=".csv"
+                  accept=".csv, .txt"
                   onChange={handleDatasetUpload}
                   hidden
                 />
