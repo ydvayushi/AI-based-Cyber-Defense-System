@@ -21,6 +21,7 @@ import {
   FaServer,
   FaBug,
   FaLock,
+  FaPaperPlane,
 } from "react-icons/fa";
 import UserDashboard from "./User_Dashboard";
 import Login from "./Login";
@@ -35,9 +36,12 @@ function App() {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [darkMode, setDarkMode] = useState(false);
   const [dataset, setDataset] = useState(null);
+  const [selectedDatasetFile, setSelectedDatasetFile] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [datasetRows, setDatasetRows] = useState([]);
   const [search, setSearch] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
+
   const [datasetStats, setDatasetStats] = useState(null);
   const [modelStats, setModelStats] = useState(null);
   const [modelEvaluation, setModelEvaluation] = useState(null);
@@ -418,48 +422,66 @@ function App() {
   };
 
   /*
-   * Dataset upload
+   * Step 1: Choose Dataset file
    */
-  const handleDatasetUpload = (event) => {
+  const handleFileSelect = (event) => {
     const file = event.target.files[0];
-
     if (!file) return;
 
     const extension = file.name.split(".").pop().toLowerCase();
-
     if (extension !== "csv" && extension !== "txt") {
-      setUploadMessage("Please upload a CSV or TXT dataset.");
+      setUploadMessage("Please select a valid CSV or TXT dataset.");
       return;
     }
 
-    setDataset(file);
-    setUploadMessage("Uploading and running AI model analysis...");
+    setSelectedDatasetFile(file);
+    setUploadMessage(`File selected: "${file.name}" (${(file.size / 1024).toFixed(1)} KB). Click "Submit Dataset" to analyze.`);
+  };
 
-    // Send to backend batch prediction endpoint
+  /*
+   * Step 2: Submit Dataset to AI Model
+   */
+  const handleSubmitDataset = async () => {
+    const targetFile = selectedDatasetFile || dataset;
+    if (!targetFile) {
+      alert("Please choose a CSV or TXT dataset file first.");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setUploadMessage(`Submitting "${targetFile.name}" and running AI model analysis...`);
+
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", targetFile);
 
-    fetch("http://localhost:5000/api/predict/upload", {
-      method: "POST",
-      body: formData,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "success") {
-          setBatchResults(data);
-          setUploadMessage(
-            `AI Model Analysis Complete: ${data.totalRecords} total records | ${data.normalCount} Normal | ${data.attackCount} Malicious (DoS: ${data.breakdown.DoS}, Probe: ${data.breakdown.Probe}, R2L: ${data.breakdown.R2L}, U2R: ${data.breakdown.U2R})`
-          );
-        } else {
-          setUploadMessage(data.message || "Failed to process dataset on backend.");
-        }
-      })
-      .catch((err) => {
-        console.error("Batch prediction upload error:", err);
+    try {
+      const res = await fetch("http://localhost:5000/api/predict/upload", {
+        method: "POST",
+        body: formData,
       });
+      const data = await res.json();
+      if (data.status === "success") {
+        setDataset(targetFile);
+        setBatchResults(data);
+        setUploadMessage(
+          `AI Analysis Complete: ${data.totalRecords} total records | ${data.normalCount} Normal | ${data.attackCount} Malicious (DoS: ${data.breakdown.DoS}, Probe: ${data.breakdown.Probe}, R2L: ${data.breakdown.R2L}, U2R: ${data.breakdown.U2R})`
+        );
+        triggerNotification({
+          title: "📊 Dataset Analysis Completed",
+          message: `Processed ${data.totalRecords} network records (${data.attackCount} attacks detected).`,
+          severity: data.attackCount > 0 ? "High" : "Safe",
+        });
+      } else {
+        setUploadMessage(data.message || "Failed to process dataset on backend.");
+      }
+    } catch (err) {
+      console.error("Batch prediction upload error:", err);
+      setUploadMessage("Server connection error during dataset analysis.");
+    } finally {
+      setIsAnalyzing(false);
+    }
 
     const reader = new FileReader();
-
     reader.onload = (e) => {
       try {
         const result = processCSV(e.target.result);
@@ -468,12 +490,15 @@ function App() {
         console.error(error);
       }
     };
-
     reader.onerror = () => {
-      setUploadMessage("Error while reading the dataset.");
+      setUploadMessage("Error reading the dataset file.");
     };
+    reader.readAsText(targetFile);
+  };
 
-    reader.readAsText(file);
+  // Backwards compatibility
+  const handleDatasetUpload = (event) => {
+    handleFileSelect(event);
   };
 
   /*
@@ -481,6 +506,7 @@ function App() {
    */
   const clearDataset = () => {
     setDataset(null);
+    setSelectedDatasetFile(null);
     setDatasetRows([]);
     setBatchResults(null);
     setUploadMessage("");
@@ -1277,44 +1303,60 @@ function App() {
                 <FaFileCsv className="upload-icon" />
 
                 <h3>
-                  {dataset
+                  {selectedDatasetFile
+                    ? selectedDatasetFile.name
+                    : dataset
                     ? dataset.name
                     : "Upload Network Traffic Dataset"}
                 </h3>
 
                 <p>
-                  Supported format: CSV
+                  {selectedDatasetFile
+                    ? `📁 Selected: "${selectedDatasetFile.name}" (${(selectedDatasetFile.size / 1024).toFixed(1)} KB) — Click "Submit Dataset" below.`
+                    : "Supported formats: CSV, TXT (NSL-KDD benchmark)"}
                 </p>
 
-                <label className="upload-btn">
-                  <FaUpload />
-                  Choose CSV File
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "10px", marginTop: "12px" }}>
+                  <label className="upload-btn">
+                    <FaUpload />
+                    {selectedDatasetFile || dataset ? "Choose Different File" : "Choose CSV File"}
 
                     <input
                       type="file"
                       accept=".csv, .txt"
-                      onChange={handleDatasetUpload}
+                      onChange={handleFileSelect}
                       hidden
                     />
-                </label>
+                  </label>
 
-                <button
-                  className="sample-btn"
-                  onClick={downloadSample}
-                >
-                  <FaDownload />
-                  Download Sample Dataset
-                </button>
-
-                {dataset && (
                   <button
-                    className="clear-btn"
-                    onClick={clearDataset}
+                    className="submit-btn"
+                    onClick={handleSubmitDataset}
+                    disabled={!selectedDatasetFile || isAnalyzing}
+                    title={selectedDatasetFile ? "Submit chosen dataset for AI analysis" : "Please choose a CSV file first"}
                   >
-                    <FaTrash />
-                    Remove Dataset
+                    <FaPaperPlane />
+                    {isAnalyzing ? "Submitting & Analyzing..." : "Submit Dataset"}
                   </button>
-                )}
+
+                  <button
+                    className="sample-btn"
+                    onClick={downloadSample}
+                  >
+                    <FaDownload />
+                    Download Sample
+                  </button>
+
+                  {(dataset || selectedDatasetFile) && (
+                    <button
+                      className="clear-btn"
+                      onClick={clearDataset}
+                    >
+                      <FaTrash />
+                      Remove
+                    </button>
+                  )}
+                </div>
 
                 {uploadMessage && (
                   <div className="upload-message">
@@ -1652,38 +1694,54 @@ function App() {
               <FaDatabase className="page-icon" />
 
               <h2>
-                {dataset
+                {selectedDatasetFile
+                  ? selectedDatasetFile.name
+                  : dataset
                   ? dataset.name
                   : "No Dataset Uploaded"}
               </h2>
 
               <p>
-                {datasetRows.length
+                {selectedDatasetFile
+                  ? `📁 Selected: "${selectedDatasetFile.name}" (${(selectedDatasetFile.size / 1024).toFixed(1)} KB) — Click "Submit Dataset" below.`
+                  : datasetRows.length
                   ? `${datasetRows.length} network records are currently loaded.`
-                  : "Upload a CSV dataset to start analysis."}
+                  : "Choose a CSV or TXT dataset file and click Submit to start AI analysis."}
               </p>
 
-              <label className="upload-btn">
-                <FaUpload />
-                Upload Dataset
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "10px", marginTop: "12px" }}>
+                <label className="upload-btn">
+                  <FaUpload />
+                  {selectedDatasetFile || dataset ? "Choose Different File" : "Choose Dataset File"}
 
-                <input
-                  type="file"
-                  accept=".csv, .txt"
-                  onChange={handleDatasetUpload}
-                  hidden
-                />
-              </label>
+                  <input
+                    type="file"
+                    accept=".csv, .txt"
+                    onChange={handleFileSelect}
+                    hidden
+                  />
+                </label>
 
-              {dataset && (
                 <button
-                  className="clear-btn"
-                  onClick={clearDataset}
+                  className="submit-btn"
+                  onClick={handleSubmitDataset}
+                  disabled={!selectedDatasetFile || isAnalyzing}
+                  title={selectedDatasetFile ? "Submit chosen dataset for AI analysis" : "Please choose a file first"}
                 >
-                  <FaTrash />
-                  Clear Dataset
+                  <FaPaperPlane />
+                  {isAnalyzing ? "Submitting & Analyzing..." : "Submit Dataset"}
                 </button>
-              )}
+
+                {(dataset || selectedDatasetFile) && (
+                  <button
+                    className="clear-btn"
+                    onClick={clearDataset}
+                  >
+                    <FaTrash />
+                    Clear Dataset
+                  </button>
+                )}
+              </div>
 
               {batchResults && (
                 <div style={{ marginTop: "24px", width: "100%", textAlign: "left" }}>
