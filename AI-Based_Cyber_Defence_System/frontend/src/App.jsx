@@ -28,6 +28,7 @@ import {
 } from "react-icons/fa";
 import UserDashboard from "./User_Dashboard";
 import Login from "./Login";
+import AiAnalysisView from "./AiAnalysisView";
 import "./App.css";
 
 function App() {
@@ -2120,33 +2121,12 @@ function App() {
                 )}
               </div>
 
-              {batchResults && (
-                <div style={{ marginTop: "24px", width: "100%", textAlign: "left" }}>
-                  <h3 style={{ marginBottom: "12px" }}>AI Model Attack Classification Breakdown</h3>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px", marginBottom: "16px" }}>
-                    <div style={{ background: "rgba(16, 185, 129, 0.1)", border: "1px solid #10b981", borderRadius: "8px", padding: "12px", textAlign: "center" }}>
-                      <strong style={{ color: "#10b981", fontSize: "20px" }}>{batchResults.normalCount}</strong>
-                      <div style={{ fontSize: "12px", color: "#64748b" }}>Normal Safe</div>
-                    </div>
-                    <div style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid #ef4444", borderRadius: "8px", padding: "12px", textAlign: "center" }}>
-                      <strong style={{ color: "#ef4444", fontSize: "20px" }}>{batchResults.breakdown?.DoS || 0}</strong>
-                      <div style={{ fontSize: "12px", color: "#64748b" }}>DoS Attacks</div>
-                    </div>
-                    <div style={{ background: "rgba(245, 158, 11, 0.1)", border: "1px solid #f59e0b", borderRadius: "8px", padding: "12px", textAlign: "center" }}>
-                      <strong style={{ color: "#f59e0b", fontSize: "20px" }}>{batchResults.breakdown?.Probe || 0}</strong>
-                      <div style={{ fontSize: "12px", color: "#64748b" }}>Probe Scans</div>
-                    </div>
-                    <div style={{ background: "rgba(139, 92, 246, 0.1)", border: "1px solid #8b5cf6", borderRadius: "8px", padding: "12px", textAlign: "center" }}>
-                      <strong style={{ color: "#8b5cf6", fontSize: "20px" }}>{batchResults.breakdown?.R2L || 0}</strong>
-                      <div style={{ fontSize: "12px", color: "#64748b" }}>R2L Attacks</div>
-                    </div>
-                    <div style={{ background: "rgba(236, 72, 153, 0.1)", border: "1px solid #ec4899", borderRadius: "8px", padding: "12px", textAlign: "center" }}>
-                      <strong style={{ color: "#ec4899", fontSize: "20px" }}>{batchResults.breakdown?.U2R || 0}</strong>
-                      <div style={{ fontSize: "12px", color: "#64748b" }}>U2R Attacks</div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* AI Verification & Explainable AI (XAI) Analysis Layout */}
+              <AiAnalysisView
+                batchResults={batchResults}
+                isAnalyzing={isAnalyzing}
+                onRerun={handleSubmitDataset}
+              />
             </div>
           </div>
         )}
@@ -2290,24 +2270,12 @@ function App() {
               {predicting && <p style={{ color: "#2563eb" }}>Analyzing packet with AI model...</p>}
 
               {singlePrediction && (
-                <div
-                  style={{
-                    padding: "16px",
-                    borderRadius: "10px",
-                    background: singlePrediction.result === "Normal" ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
-                    border: `1px solid ${singlePrediction.result === "Normal" ? "#10b981" : "#ef4444"}`,
-                    marginTop: "16px"
-                  }}
-                >
-                  <h4 style={{ color: singlePrediction.result === "Normal" ? "#10b981" : "#ef4444", marginBottom: "8px" }}>
-                    {singlePrediction.result === "Normal" ? "🛡️ Traffic Safe (Normal)" : "⚠️ Threat Detected: Malicious Activity"}
-                  </h4>
-                  <p style={{ margin: "4px 0" }}>
-                    <strong>Detected Category:</strong> <span style={{ textTransform: "uppercase" }}>{singlePrediction.attackType}</span>
-                  </p>
-                  <p style={{ margin: "4px 0" }}>
-                    <strong>Model Confidence:</strong> {(singlePrediction.confidence * 100).toFixed(2)}%
-                  </p>
+                <div style={{ marginTop: "20px" }}>
+                  <AiAnalysisView
+                    singlePrediction={singlePrediction}
+                    isAnalyzing={predicting}
+                    onRerun={() => handlePredictSingle(singleInput)}
+                  />
                 </div>
               )}
             </div>
