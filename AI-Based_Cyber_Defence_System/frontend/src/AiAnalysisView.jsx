@@ -1,14 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { FaFileAlt, FaRedo, FaShieldAlt } from "react-icons/fa";
 import "./AiAnalysisView.css";
 
 /**
  * AiAnalysisView
- * Replicates the CarbonX AI Verification & Explainable AI (XAI) analysis layout.
- * Supports:
- * - Live uploaded dataset analysis (batchResults)
- * - Single packet AI prediction analysis (singlePrediction)
- * - Exact reference prototype mode matching the user's screenshot
+ * AI Threat Verification & Explainable AI (XAI) analysis layout.
+ * Directly applied to Cyber Defence Network Traffic & Threat Classification.
  */
 export default function AiAnalysisView({
   batchResults = null,
@@ -16,96 +13,9 @@ export default function AiAnalysisView({
   onRerun = null,
   isAnalyzing = false,
 }) {
-  // Mode: "cyber" (adapted to cyber defence) or "reference" (exact literal match to screenshot)
-  const [viewMode, setViewMode] = useState(batchResults || singlePrediction ? "cyber" : "reference");
-
-  // Compute metrics based on mode and passed data
+  // Compute metrics based on passed analysis data or baseline benchmark
   const analysisData = useMemo(() => {
-    // 1. EXACT REFERENCE PROTOTYPE MODE (Matches media_1790764252341.png literally)
-    if (viewMode === "reference" && !batchResults && !singlePrediction) {
-      return {
-        title: "Blue Carbon Verification Intelligence",
-        prototypeBadge: "PROTOTYPE",
-        confidence: 61,
-        confidenceLabel: "AI Confidence",
-        caption: "Decision Support",
-        statusText: "Manual Review Required",
-        statusType: "review",
-        gaugeDotText: "Under Review",
-        gaugeDotType: "review",
-        gaugeColor: "#f59e0b",
-        riskCardTitle: "Risk & Consistency Factors",
-        riskCardSubtitle: "Factors contributing to the verification confidence score",
-        riskFactors: [
-          {
-            name: "Claimed area mismatch",
-            severity: "High",
-            pct: 86,
-            desc: "Claimed 25 ha, evidence shows 18.7 ha",
-          },
-          {
-            name: "Historical evidence inconsistency",
-            severity: "Medium",
-            pct: 64,
-            desc: "Imagery does not match expected canopy density",
-          },
-          {
-            name: "Potential spatial overlap",
-            severity: "High",
-            pct: 91,
-            desc: "87% overlap with CX-2024-007",
-          },
-          {
-            name: "Evidence completeness",
-            severity: "Medium",
-            pct: 54,
-            desc: "Field survey report pending validation",
-          },
-          {
-            name: "Data quality",
-            severity: "Low",
-            pct: 26,
-            desc: "Project metadata mostly consistent",
-          },
-        ],
-        xaiTitle: "Explainable AI: Why is this claim flagged?",
-        xaiSubtitle: "Contribution of each factor to the flagging decision",
-        xaiFeatures: [
-          {
-            name: "Area Mismatch",
-            pct: 94,
-            impact: "+42.5% Weight",
-          },
-          {
-            name: "Canopy Density Discrepancy",
-            pct: 76,
-            impact: "+28.1% Weight",
-          },
-          {
-            name: "Spatial Boundary Overlap",
-            pct: 62,
-            impact: "+21.4% Weight",
-          },
-          {
-            name: "Temporal Sensor Drift",
-            pct: 48,
-            impact: "+14.7% Weight",
-          },
-          {
-            name: "Biomass Calibration Offset",
-            pct: 32,
-            impact: "+9.2% Weight",
-          },
-          {
-            name: "Satellite Resolution Factor",
-            pct: 20,
-            impact: "+5.1% Weight",
-          },
-        ],
-      };
-    }
-
-    // 2. BATCH DATASET ANALYSIS (Live dataset metrics from NSL-KDD benchmark or user CSV)
+    // 1. BATCH DATASET ANALYSIS (Live dataset metrics from NSL-KDD benchmark or user CSV)
     if (batchResults && batchResults.totalRecords > 0) {
       const total = batchResults.totalRecords;
       const attackCount = batchResults.attackCount || 0;
@@ -128,7 +38,7 @@ export default function AiAnalysisView({
 
       return {
         title: "AI Cyber Threat Verification Intelligence",
-        prototypeBadge: "ACTIVE DEFENSE",
+        prototypeBadge: "PROTOTYPE",
         confidence: confidenceScore,
         confidenceLabel: "AI Confidence",
         caption: "Decision Support",
@@ -212,14 +122,14 @@ export default function AiAnalysisView({
       };
     }
 
-    // 3. SINGLE PACKET PREDICTION
+    // 2. SINGLE PACKET PREDICTION
     if (singlePrediction) {
       const isAttack = singlePrediction.result === "Attack";
       const conf = Math.round((singlePrediction.confidence || 0.98) * 100);
 
       return {
         title: "AI Threat Verification & Single Packet Analysis",
-        prototypeBadge: "MODEL INFERENCE",
+        prototypeBadge: "PROTOTYPE",
         confidence: conf,
         confidenceLabel: "AI Confidence",
         caption: "Decision Support",
@@ -305,7 +215,7 @@ export default function AiAnalysisView({
       };
     }
 
-    // 4. DEFAULT CYBER DEFENCE STATE (61% Confidence with Review Needed)
+    // 3. DEFAULT BASELINE CYBER THREAT VERIFICATION STATE (61% Confidence with Review Required)
     return {
       title: "AI Cyber Threat Verification Intelligence",
       prototypeBadge: "PROTOTYPE",
@@ -348,7 +258,7 @@ export default function AiAnalysisView({
           name: "Data quality",
           severity: "Low",
           pct: 26,
-          desc: "Project metadata and payload checksums mostly consistent",
+          desc: "Packet payload metadata and checksum parameters mostly consistent",
         },
       ],
       xaiTitle: "Explainable AI: Why is this traffic flagged?",
@@ -386,7 +296,7 @@ export default function AiAnalysisView({
         },
       ],
     };
-  }, [viewMode, batchResults, singlePrediction]);
+  }, [batchResults, singlePrediction]);
 
   // SVG Gauge calculations
   // Radius = 78 => Circumference = 2 * PI * 78 ~= 490.09
@@ -406,46 +316,6 @@ export default function AiAnalysisView({
           <span className="ai-analysis-prototype-badge">
             {analysisData.prototypeBadge}
           </span>
-
-          {/* Perspective mode switcher */}
-          {!batchResults && !singlePrediction && (
-            <div style={{ display: "inline-flex", gap: "6px", marginLeft: "8px" }}>
-              <button
-                type="button"
-                onClick={() => setViewMode("reference")}
-                style={{
-                  background: viewMode === "reference" ? "#fef3c7" : "transparent",
-                  color: viewMode === "reference" ? "#b45309" : "#64748b",
-                  border: `1px solid ${viewMode === "reference" ? "#fde68a" : "#cbd5e1"}`,
-                  padding: "2px 8px",
-                  borderRadius: "6px",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
-                title="View exact CarbonX benchmark template matching screenshot"
-              >
-                CarbonX View
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("cyber")}
-                style={{
-                  background: viewMode === "cyber" ? "#dbeafe" : "transparent",
-                  color: viewMode === "cyber" ? "#1e40af" : "#64748b",
-                  border: `1px solid ${viewMode === "cyber" ? "#bfdbfe" : "#cbd5e1"}`,
-                  padding: "2px 8px",
-                  borderRadius: "6px",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
-                title="View Cyber Defence network traffic threat model"
-              >
-                Cyber Threat View
-              </button>
-            </div>
-          )}
         </div>
 
         <div className="ai-analysis-header-right">
