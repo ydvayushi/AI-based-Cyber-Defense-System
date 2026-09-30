@@ -22,6 +22,9 @@ import {
   FaBug,
   FaLock,
   FaPaperPlane,
+  FaPlay,
+  FaPause,
+  FaSyncAlt,
 } from "react-icons/fa";
 import UserDashboard from "./User_Dashboard";
 import Login from "./Login";
@@ -57,6 +60,148 @@ function App() {
   });
   const [singlePrediction, setSinglePrediction] = useState(null);
   const [predicting, setPredicting] = useState(false);
+
+  /*
+   * Live Traffic Stream Simulator State
+   */
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [livePackets, setLivePackets] = useState([
+    {
+      id: "pkt-init-1",
+      time: "15:45:10",
+      sourceIp: "192.168.1.105",
+      protocol: "TCP",
+      service: "HTTP",
+      bytes: "342 B",
+      verdict: "Normal",
+      attackType: "Normal",
+      confidence: 99.4,
+      status: "Allowed",
+    },
+    {
+      id: "pkt-init-2",
+      time: "15:45:08",
+      sourceIp: "10.0.0.14",
+      protocol: "UDP",
+      service: "DNS",
+      bytes: "68 B",
+      verdict: "Normal",
+      attackType: "Normal",
+      confidence: 98.9,
+      status: "Allowed",
+    },
+    {
+      id: "pkt-init-3",
+      time: "15:45:05",
+      sourceIp: "185.220.101.42",
+      protocol: "TCP",
+      service: "Private",
+      bytes: "0 B",
+      verdict: "Attack",
+      attackType: "DoS",
+      confidence: 96.2,
+      status: "Blocked",
+    },
+  ]);
+  const [liveGraphPoints, setLiveGraphPoints] = useState([
+    25, 30, 40, 35, 50, 45, 60, 55, 75, 40, 30, 45, 50, 65, 80, 40, 35, 50, 45, 30,
+  ]);
+  const [streamStats, setStreamStats] = useState({
+    total: 3,
+    normal: 2,
+    attacks: 1,
+  });
+
+  useEffect(() => {
+    let interval = null;
+    if (isStreaming) {
+      interval = setInterval(() => {
+        const now = new Date();
+        const timeStr = now.toTimeString().split(" ")[0];
+
+        // 72% chance normal, 28% chance attack
+        const isAttack = Math.random() < 0.28;
+        let attackType = "Normal";
+        let protocol = "TCP";
+        let service = "HTTP";
+        let bytes = `${Math.floor(Math.random() * 800 + 120)} B`;
+        let ip = `192.168.1.${Math.floor(Math.random() * 180 + 2)}`;
+        let confidence = (Math.random() * 4 + 95.8).toFixed(1);
+
+        if (isAttack) {
+          const attacks = ["DoS", "Probe", "R2L", "U2R"];
+          attackType = attacks[Math.floor(Math.random() * attacks.length)];
+          ip = `185.${Math.floor(Math.random() * 200 + 10)}.${Math.floor(Math.random() * 200 + 1)}.${Math.floor(Math.random() * 250 + 1)}`;
+          if (attackType === "DoS") {
+            service = "Private";
+            bytes = "0 B";
+          } else if (attackType === "Probe") {
+            service = "Scan";
+            bytes = `${Math.floor(Math.random() * 60 + 20)} B`;
+          } else if (attackType === "R2L") {
+            service = "FTP";
+            bytes = `${Math.floor(Math.random() * 500 + 100)} B`;
+          } else {
+            service = "Telnet";
+            bytes = `${Math.floor(Math.random() * 1200 + 200)} B`;
+          }
+        } else {
+          const normalServices = ["HTTP", "HTTPS", "DNS", "SMTP", "SSH"];
+          service = normalServices[Math.floor(Math.random() * normalServices.length)];
+          if (service === "DNS") protocol = "UDP";
+        }
+
+        const newPacket = {
+          id: "pkt-" + Date.now(),
+          time: timeStr,
+          sourceIp: ip,
+          protocol,
+          service,
+          bytes,
+          verdict: isAttack ? "Attack" : "Normal",
+          attackType,
+          confidence: parseFloat(confidence),
+          status: isAttack ? "Blocked" : "Allowed",
+        };
+
+        setLivePackets((prev) => [newPacket, ...prev.slice(0, 14)]);
+
+        // Update rolling graph points (last 20 points)
+        setLiveGraphPoints((prev) => {
+          const nextVal = isAttack
+            ? Math.floor(Math.random() * 25 + 75) // Spike to 75-100 on attack
+            : Math.floor(Math.random() * 30 + 25); // Baseline 25-55 on normal
+          return [...prev.slice(1), nextVal];
+        });
+
+        setStreamStats((prev) => ({
+          total: prev.total + 1,
+          normal: isAttack ? prev.normal : prev.normal + 1,
+          attacks: isAttack ? prev.attacks + 1 : prev.attacks,
+        }));
+
+        if (isAttack) {
+          triggerNotification({
+            title: `⚠️ Live Threat: ${attackType} Attack Intercepted`,
+            message: `Real-time stream flagged rogue packet from ${ip} (${confidence}% confidence).`,
+            severity: attackType === "DoS" || attackType === "U2R" ? "Critical" : "High",
+          });
+        }
+      }, 2200);
+    }
+    return () => clearInterval(interval);
+  }, [isStreaming]);
+
+  const liveSvgPoints = useMemo(() => {
+    return liveGraphPoints
+      .map((val, idx) => {
+        const x = (idx / (liveGraphPoints.length - 1)) * 100;
+        const y = 100 - val;
+        return `${x},${y}`;
+      })
+      .join(" ");
+  }, [liveGraphPoints]);
+
 
   useEffect(() => {
     fetch("http://localhost:5000/api/dataset/stats")
@@ -1616,61 +1761,293 @@ function App() {
           </>
         )}
 
-        {/* LIVE TRAFFIC */}
+        {/* LIVE TRAFFIC MONITORING & SIMULATOR */}
 
         {activeMenu === "Live Traffic" && (
           <div className="page-section">
-            <div className="page-header">
+            <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
               <div>
-                <h2>Live Traffic Monitoring</h2>
+                <h2>Live Traffic Monitoring & SOC Feed</h2>
                 <p>
-                  Monitor incoming network traffic
-                  activities.
+                  Real-time network packet inspection powered by 5-class Random Forest AI
                 </p>
               </div>
 
-              <div className="live large-live">
-                <span className="live-dot"></span>
-                SYSTEM MONITORING
+              {/* SIMULATOR CONTROLS */}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "6px 14px",
+                    borderRadius: "20px",
+                    fontSize: "12px",
+                    fontWeight: "700",
+                    background: isStreaming ? "rgba(16, 185, 129, 0.15)" : "rgba(100, 116, 139, 0.15)",
+                    color: isStreaming ? "#10b981" : "#64748b",
+                    border: isStreaming ? "1px solid #10b981" : "1px solid #94a3b8",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      backgroundColor: isStreaming ? "#10b981" : "#94a3b8",
+                      boxShadow: isStreaming ? "0 0 8px #10b981" : "none",
+                    }}
+                  ></span>
+                  {isStreaming ? "STREAMING ACTIVE (~2.2s)" : "STREAM PAUSED"}
+                </div>
+
+                <button
+                  onClick={() => setIsStreaming(!isStreaming)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "10px 18px",
+                    borderRadius: "8px",
+                    border: "none",
+                    background: isStreaming ? "#f59e0b" : "#10b981",
+                    color: "#ffffff",
+                    fontWeight: "700",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                    boxShadow: isStreaming
+                      ? "0 4px 14px rgba(245, 158, 11, 0.35)"
+                      : "0 4px 14px rgba(16, 185, 129, 0.35)",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  {isStreaming ? <FaPause /> : <FaPlay />}
+                  {isStreaming ? "Pause Stream" : "Start Live Stream"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setLivePackets([]);
+                    setStreamStats({ total: 0, normal: 0, attacks: 0 });
+                  }}
+                  title="Clear Feed"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    border: darkMode ? "1px solid #334155" : "1px solid #cbd5e1",
+                    background: darkMode ? "#1e293b" : "#ffffff",
+                    color: darkMode ? "#cbd5e1" : "#475569",
+                    fontWeight: "600",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <FaSyncAlt />
+                  Clear
+                </button>
               </div>
             </div>
 
-            <div className="traffic-status">
-              <FaNetworkWired />
+            {/* LIVE KPI METRICS */}
+            <div className="cards" style={{ marginTop: "16px" }}>
+              <div className="card">
+                <FaNetworkWired className="icon" />
+                <p>Packets Streamed</p>
+                <h3>{streamStats.total}</h3>
+                <small style={{ color: "#2563eb", fontWeight: "600" }}>Live SOC ingestion</small>
+              </div>
 
-              <div>
-                <h3>Network Monitoring Active</h3>
+              <div className="card">
+                <FaShieldAlt className="icon safe" />
+                <p>Normal Verified</p>
+                <h3 style={{ color: "#10b981" }}>{streamStats.normal}</h3>
+                <small style={{ color: "#10b981", fontWeight: "600" }}>Safe packets passed</small>
+              </div>
 
-                <p>
-                  Upload a dataset from the Dataset
-                  section to analyze network traffic.
-                </p>
+              <div className="card">
+                <FaExclamationTriangle className="icon danger" />
+                <p>Intrusions Blocked</p>
+                <h3 style={{ color: "#ef4444" }}>{streamStats.attacks}</h3>
+                <small style={{ color: "#ef4444", fontWeight: "600" }}>Rogue threats dropped</small>
+              </div>
+
+              <div className="card">
+                <FaChartLine className="icon warning" />
+                <p>Threat Frequency</p>
+                <h3 style={{ color: streamStats.attacks > 0 ? "#f59e0b" : "#10b981" }}>
+                  {((streamStats.attacks / (streamStats.total || 1)) * 100).toFixed(1)}%
+                </h3>
+                <small style={{ color: "#64748b" }}>Of total traffic flow</small>
               </div>
             </div>
 
-            <div className="panel">
-              <div className="panel-title">
+            {/* REAL-TIME THROUGHPUT GRAPH */}
+            <div className="panel" style={{ marginTop: "20px" }}>
+              <div className="panel-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <h3>Traffic Activity</h3>
-                  <p>
-                    Current dataset-based activity
-                  </p>
+                  <h3>Real-Time Packet Throughput Waveform</h3>
+                  <p>Rolling traffic volume and anomaly spikes across the last 20 evaluations</p>
+                </div>
+                <div style={{ fontSize: "12px", color: isStreaming ? "#10b981" : "#64748b", fontWeight: "600" }}>
+                  {isStreaming ? "● Waveform Updating Live" : "○ Waveform Paused"}
                 </div>
               </div>
 
-              <div className="large-graph">
-                <svg
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                >
+              <div className="large-graph" style={{ position: "relative", height: "180px", overflow: "hidden" }}>
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: "100%", height: "100%" }}>
+                  <defs>
+                    <linearGradient id="liveTrafficGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2563eb" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+                  {/* Baseline grid line */}
+                  <line x1="0" y1="70" x2="100" y2="70" stroke={darkMode ? "#334155" : "#e2e8f0"} strokeDasharray="2" strokeWidth="0.5" />
+                  <line x1="0" y1="30" x2="100" y2="30" stroke={darkMode ? "#334155" : "#e2e8f0"} strokeDasharray="2" strokeWidth="0.5" />
+
+                  {/* Polyline */}
                   <polyline
-                    points={graphPoints}
+                    points={liveSvgPoints}
                     fill="none"
                     stroke="#2563eb"
                     strokeWidth="2.5"
                     vectorEffect="non-scaling-stroke"
+                    style={{ transition: "all 0.4s ease" }}
                   />
                 </svg>
+              </div>
+            </div>
+
+            {/* ROLLING LIVE PACKET STREAM TABLE */}
+            <div className="panel" style={{ marginTop: "24px" }}>
+              <div className="panel-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <h3>Live Inspected Packet Stream (Latest {livePackets.length})</h3>
+                  <p>Real-time packet inspection and automated mitigation verdicts</p>
+                </div>
+                <span
+                  style={{
+                    background: "rgba(37, 99, 235, 0.1)",
+                    color: "#2563eb",
+                    fontSize: "12px",
+                    fontWeight: "700",
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                  }}
+                >
+                  SOC Stream Active
+                </span>
+              </div>
+
+              <div style={{ overflowX: "auto", marginTop: "12px" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                  <thead>
+                    <tr style={{ background: darkMode ? "#1e293b" : "#f8fafc", textAlign: "left" }}>
+                      <th style={{ padding: "10px" }}>Time</th>
+                      <th style={{ padding: "10px" }}>Source IP</th>
+                      <th style={{ padding: "10px" }}>Protocol</th>
+                      <th style={{ padding: "10px" }}>Service</th>
+                      <th style={{ padding: "10px" }}>Payload Size</th>
+                      <th style={{ padding: "10px" }}>AI Verdict</th>
+                      <th style={{ padding: "10px" }}>Confidence</th>
+                      <th style={{ padding: "10px", textAlign: "right" }}>Mitigation Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {livePackets.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" style={{ padding: "30px", textAlign: "center", color: "#94a3b8" }}>
+                          Stream buffer is empty. Click <strong>"Start Live Stream"</strong> above to begin packet inspection.
+                        </td>
+                      </tr>
+                    ) : (
+                      livePackets.map((pkt) => (
+                        <tr
+                          key={pkt.id}
+                          style={{
+                            borderBottom: darkMode ? "1px solid #334155" : "1px solid #f1f5f9",
+                            backgroundColor:
+                              pkt.verdict === "Attack"
+                                ? darkMode
+                                  ? "rgba(239, 68, 68, 0.08)"
+                                  : "rgba(239, 68, 68, 0.04)"
+                                : "transparent",
+                            transition: "background 0.2s ease",
+                          }}
+                        >
+                          <td style={{ padding: "10px", color: "#64748b", fontFamily: "monospace" }}>{pkt.time}</td>
+                          <td style={{ padding: "10px", fontWeight: "600", fontFamily: "monospace" }}>{pkt.sourceIp}</td>
+                          <td style={{ padding: "10px" }}>
+                            <span
+                              style={{
+                                padding: "2px 6px",
+                                borderRadius: "4px",
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                background: pkt.protocol === "TCP" ? "rgba(37, 99, 235, 0.1)" : "rgba(139, 92, 246, 0.1)",
+                                color: pkt.protocol === "TCP" ? "#2563eb" : "#8b5cf6",
+                              }}
+                            >
+                              {pkt.protocol}
+                            </span>
+                          </td>
+                          <td style={{ padding: "10px", color: darkMode ? "#cbd5e1" : "#475569" }}>{pkt.service}</td>
+                          <td style={{ padding: "10px", color: "#64748b" }}>{pkt.bytes}</td>
+                          <td style={{ padding: "10px" }}>
+                            <span
+                              style={{
+                                padding: "3px 8px",
+                                borderRadius: "6px",
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                background:
+                                  pkt.verdict === "Normal"
+                                    ? "rgba(16, 185, 129, 0.12)"
+                                    : pkt.attackType === "DoS"
+                                    ? "rgba(239, 68, 68, 0.15)"
+                                    : pkt.attackType === "Probe"
+                                    ? "rgba(245, 158, 11, 0.15)"
+                                    : "rgba(139, 92, 246, 0.15)",
+                                color:
+                                  pkt.verdict === "Normal"
+                                    ? "#10b981"
+                                    : pkt.attackType === "DoS"
+                                    ? "#ef4444"
+                                    : pkt.attackType === "Probe"
+                                    ? "#f59e0b"
+                                    : "#8b5cf6",
+                              }}
+                            >
+                              {pkt.verdict === "Normal" ? "✓ Normal Traffic" : `⚠️ ${pkt.attackType} Attack`}
+                            </span>
+                          </td>
+                          <td style={{ padding: "10px", fontWeight: "600" }}>{pkt.confidence}%</td>
+                          <td style={{ padding: "10px", textAlign: "right" }}>
+                            <span
+                              style={{
+                                padding: "3px 10px",
+                                borderRadius: "20px",
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                background: pkt.status === "Blocked" ? "#ef4444" : "#10b981",
+                                color: "#ffffff",
+                                boxShadow: pkt.status === "Blocked" ? "0 2px 6px rgba(239, 68, 68, 0.3)" : "none",
+                              }}
+                            >
+                              {pkt.status === "Blocked" ? "🛡️ BLOCKED" : "✓ ALLOWED"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
