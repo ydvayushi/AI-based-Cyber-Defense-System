@@ -111,10 +111,21 @@
   font-size: 20px;
 }
 
-.account-info > p {
+.account-info > p,
+.account-info p {
   margin: 0;
-  color: #64748b;
+  color: #1e293b;
   font-size: 14px;
+  font-weight: 500;
+}
+
+.account-info table th {
+  color: #0f172a !important;
+  font-weight: 700;
+}
+
+.account-info table td {
+  color: #0f172a;
 }
 
 .info-grid {
@@ -133,7 +144,8 @@
 
 .info-grid span {
   display: block;
-  color: #64748b;
+  color: #1e293b;
+  font-weight: 600;
   font-size: 13px;
   margin-bottom: 8px;
 }

@@ -433,7 +433,7 @@ function UserProfile({ user, onLogout, onUpdateUser }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h3>Account Information</h3>
-            <p>Your account credentials and security role</p>
+            <p style={{ color: "#1e293b", margin: 0, fontWeight: "500" }}>Your account credentials and security role</p>
           </div>
           <button
             onClick={handleOpenEdit}
@@ -455,32 +455,32 @@ function UserProfile({ user, onLogout, onUpdateUser }) {
         <div className="info-grid">
 
           <div>
-            <span>Full Name</span>
+            <span style={{ color: "#1e293b", fontWeight: "600" }}>Full Name</span>
             <strong>{user?.name || "Arshiya"}</strong>
           </div>
 
           <div>
-            <span>Email</span>
+            <span style={{ color: "#1e293b", fontWeight: "600" }}>Email</span>
             <strong>{user?.email || "arshiya@cyberdefence.com"}</strong>
           </div>
 
           <div>
-            <span>Role</span>
+            <span style={{ color: "#1e293b", fontWeight: "600" }}>Role</span>
             <strong style={{ color: "#2563eb" }}>{user?.role || "Administrator"}</strong>
           </div>
 
           <div>
-            <span>Account Status</span>
+            <span style={{ color: "#1e293b", fontWeight: "600" }}>Account Status</span>
             <strong className="secure">Active</strong>
           </div>
 
           <div>
-            <span>Last Login</span>
+            <span style={{ color: "#1e293b", fontWeight: "600" }}>Last Login</span>
             <strong>Today</strong>
           </div>
 
           <div>
-            <span>Member Since</span>
+            <span style={{ color: "#1e293b", fontWeight: "600" }}>Member Since</span>
             <strong>2026</strong>
           </div>
 
@@ -492,7 +492,7 @@ function UserProfile({ user, onLogout, onUpdateUser }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
           <div>
             <h3>Team Accounts & Registered IDs ({teamUsers.length})</h3>
-            <p>Teammates registered in the MongoDB database</p>
+            <p style={{ color: "#1e293b", margin: 0, fontWeight: "500" }}>Teammates registered in the MongoDB database</p>
           </div>
           <button
             onClick={fetchUsers}
@@ -520,11 +520,11 @@ function UserProfile({ user, onLogout, onUpdateUser }) {
         <div style={{ overflowX: "auto", marginTop: "16px" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
-              <tr style={{ background: "rgba(100, 116, 139, 0.1)", textAlign: "left" }}>
-                <th style={{ padding: "10px", borderRadius: "6px 0 0 6px" }}>Name</th>
-                <th style={{ padding: "10px" }}>Email</th>
-                <th style={{ padding: "10px" }}>Role</th>
-                <th style={{ padding: "10px", textAlign: "right", borderRadius: "0 6px 6px 0" }}>Action</th>
+              <tr style={{ background: "rgba(100, 116, 139, 0.12)", textAlign: "left" }}>
+                <th style={{ padding: "10px", borderRadius: "6px 0 0 6px", color: "#0f172a", fontWeight: "700" }}>Name</th>
+                <th style={{ padding: "10px", color: "#0f172a", fontWeight: "700" }}>Email</th>
+                <th style={{ padding: "10px", color: "#0f172a", fontWeight: "700" }}>Role</th>
+                <th style={{ padding: "10px", textAlign: "right", borderRadius: "0 6px 6px 0", color: "#0f172a", fontWeight: "700" }}>Action</th>
               </tr>
             </thead>
             <tbody>
