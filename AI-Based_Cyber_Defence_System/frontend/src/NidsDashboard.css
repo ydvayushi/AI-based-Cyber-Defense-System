@@ -1,0 +1,465 @@
+/* ========================================================
+   NIDS Dashboard Styling
+   Pixel-Perfect Match for Dark SOC Dashboard Reference
+======================================================== */
+
+.nids-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* TOP TITLE & CONTROL BAR */
+.nids-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.nids-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nids-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.nids-controls-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nids-date-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #131b2e;
+  border: 1px solid #1f293d;
+  color: #94a3b8;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.nids-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.nids-export-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* 5 KPI METRIC CARDS ROW */
+.nids-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1200px) {
+  .nids-kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .nids-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nids-kpi-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.nids-kpi-header {
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.nids-kpi-value-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.nids-kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.nids-kpi-trend {
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nids-kpi-trend.danger {
+  color: #ef4444;
+}
+
+.nids-kpi-trend.success {
+  color: #10b981;
+}
+
+.nids-kpi-sparkline {
+  width: 100%;
+  height: 38px;
+  margin-top: 4px;
+}
+
+/* MIDDLE ROW: TRAFFIC OVERVIEW & TOP ATTACK TYPES */
+.nids-two-col-grid {
+  display: grid;
+  grid-template-columns: 1.7fr 1.1fr;
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .nids-two-col-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nids-panel {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.nids-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.nids-panel-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.nids-panel-action {
+  font-size: 12px;
+  color: #60a5fa;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-weight: 600;
+}
+
+.nids-panel-action:hover {
+  text-decoration: underline;
+}
+
+.nids-select {
+  background: #1f2937;
+  color: #9ca3af;
+  border: 1px solid #374151;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* TRAFFIC SPLINE CHART */
+.nids-traffic-legends {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 12px;
+}
+
+.nids-legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.nids-chart-wrap {
+  width: 100%;
+  height: 220px;
+  position: relative;
+}
+
+/* TOP ATTACK TYPES DONUT */
+.nids-donut-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  .nids-donut-container {
+    flex-direction: column;
+  }
+}
+
+.nids-donut-graphic-wrap {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nids-donut-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.nids-donut-center-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.nids-donut-total-count {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.nids-donut-sub-text {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.nids-donut-legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.nids-donut-legend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.nids-donut-legend-name {
+  display: flex;
+  align-items: center;
+  color: #e5e7eb;
+}
+
+.nids-donut-legend-stat {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* BOTTOM ROW: RECENT ALERTS & SYSTEM STATUS */
+.nids-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.nids-alerts-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+}
+
+.nids-alerts-table th {
+  padding: 10px 12px;
+  color: #9ca3af;
+  font-weight: 600;
+  border-bottom: 1px solid #1f2937;
+  white-space: nowrap;
+}
+
+.nids-alerts-table td {
+  padding: 11px 12px;
+  color: #e5e7eb;
+  border-bottom: 1px solid #1f2937;
+  white-space: nowrap;
+}
+
+.nids-alerts-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.nids-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nids-pill.critical {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.nids-pill.high {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.nids-pill.medium {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.nids-pill.low {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.nids-action-pill.blocked {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.nids-action-pill.logged {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+/* SYSTEM STATUS BARS */
+.nids-sys-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  justify-content: center;
+}
+
+.nids-sys-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nids-sys-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.nids-sys-label {
+  color: #9ca3af;
+}
+
+.nids-sys-pct {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.nids-sys-bar-track {
+  width: 100%;
+  height: 6px;
+  background: #1f2937;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.nids-sys-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.6s ease;
+}
+
+.nids-sys-bar-fill.cpu {
+  background: #3b82f6;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.nids-sys-bar-fill.memory {
+  background: #a855f7;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
+
+.nids-sys-bar-fill.disk {
+  background: #f97316;
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
+}
+
+.nids-sys-bar-fill.network {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+}

@@ -17,7 +17,8 @@ input {
 
 .app {
   min-height: 100vh;
-  background: #f1f5f9;
+  width: 100%;
+  background: #0b0f19;
 }
 
 /* =========================
@@ -954,12 +955,15 @@ input {
 ========================= */
 
 .dark-mode {
-  background: #0f172a;
+  background: #0b0f19;
   color: #e2e8f0;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .dark-mode .main {
-  background: #0f172a;
+  background: #0b0f19;
+  min-height: 100vh;
 }
 
 .dark-mode .navbar,

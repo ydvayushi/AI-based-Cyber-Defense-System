@@ -40,7 +40,8 @@
 }
 
 .profile-card p {
-  color: #64748b;
+  color: #000000 !important;
+  font-weight: 700 !important;
   margin: 8px 0 22px;
   font-size: 15px;
 }
@@ -81,7 +82,13 @@
   align-items: center;
   padding: 17px 5px;
   border-bottom: 1px solid #e2e8f0;
-  color: #334155;
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+.security-item span {
+  color: #000000 !important;
+  font-weight: 700 !important;
 }
 
 .security-item:last-child {
@@ -111,12 +118,12 @@
   font-size: 20px;
 }
 
-.account-info > p,
-.account-info p {
+.account-info p,
+.account-info > p {
   margin: 0;
-  color: #1e293b;
+  color: #000000 !important;
+  font-weight: 700 !important;
   font-size: 14px;
-  font-weight: 500;
 }
 
 .account-info table th {
@@ -144,14 +151,15 @@
 
 .info-grid span {
   display: block;
-  color: #1e293b;
-  font-weight: 600;
+  color: #000000 !important;
+  font-weight: 700 !important;
   font-size: 13px;
   margin-bottom: 8px;
 }
 
 .info-grid strong {
-  color: #0f172a;
+  color: #000000 !important;
+  font-weight: 800 !important;
   font-size: 15px;
 }
 
@@ -170,8 +178,10 @@
   font-size: 20px;
 }
 
+.activity-panel p,
 .activity-panel > p {
-  color: #64748b;
+  color: #000000 !important;
+  font-weight: 700 !important;
   margin: 0 0 15px;
   font-size: 14px;
 }
@@ -198,18 +208,21 @@
 
 .activity strong {
   display: block;
-  color: #0f172a;
+  color: #000000 !important;
+  font-weight: 800 !important;
   font-size: 15px;
 }
 
 .activity small {
   display: block;
-  color: #64748b;
+  color: #000000 !important;
+  font-weight: 700 !important;
   margin-top: 5px;
 }
 
 .activity label {
-  color: #64748b;
+  color: #000000 !important;
+  font-weight: 700 !important;
   font-size: 13px;
 }
 
@@ -220,8 +233,12 @@
 .dark .profile-card,
 .dark .security-overview,
 .dark .account-info,
-.dark .activity-panel {
-  background: #1e293b;
+.dark .activity-panel,
+.dark-mode .profile-card,
+.dark-mode .security-overview,
+.dark-mode .account-info,
+.dark-mode .activity-panel {
+  background: #ffffff;
 }
 
 .dark .profile-card h2,
@@ -229,31 +246,59 @@
 .dark .account-info h3,
 .dark .activity-panel h3,
 .dark .info-grid strong,
-.dark .activity strong {
-  color: #f8fafc;
+.dark .activity strong,
+.dark-mode .profile-card h2,
+.dark-mode .security-overview h3,
+.dark-mode .account-info h3,
+.dark-mode .activity-panel h3,
+.dark-mode .info-grid strong,
+.dark-mode .activity strong {
+  color: #000000 !important;
+  font-weight: 800 !important;
 }
 
 .dark .profile-card p,
+.dark .account-info p,
 .dark .account-info > p,
+.dark .activity-panel p,
 .dark .activity-panel > p,
 .dark .info-grid span,
 .dark .activity small,
-.dark .activity label {
-  color: #94a3b8;
+.dark .activity label,
+.dark-mode .profile-card p,
+.dark-mode .account-info p,
+.dark-mode .account-info > p,
+.dark-mode .activity-panel p,
+.dark-mode .activity-panel > p,
+.dark-mode .info-grid span,
+.dark-mode .activity small,
+.dark-mode .activity label {
+  color: #000000 !important;
+  font-weight: 700 !important;
 }
 
-.dark .security-item {
-  color: #e2e8f0;
-  border-color: #334155;
+.dark .security-item,
+.dark-mode .security-item {
+  color: #000000 !important;
+  font-weight: 700 !important;
+  border-color: #e2e8f0;
 }
 
-.dark .info-grid div {
-  background: #0f172a;
-  border-color: #334155;
+.dark .security-item span,
+.dark-mode .security-item span {
+  color: #000000 !important;
+  font-weight: 700 !important;
 }
 
-.dark .activity {
-  border-color: #334155;
+.dark .info-grid div,
+.dark-mode .info-grid div {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.dark .activity,
+.dark-mode .activity {
+  border-color: #e2e8f0;
 }
 
 /* =========================

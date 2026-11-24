@@ -163,7 +163,7 @@ function UserProfile({ user, onLogout, onUpdateUser }) {
                 <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#0f172a" }}>
                   ✏️ Edit Profile
                 </h3>
-                <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#64748b" }}>
+                <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#000000", fontWeight: "700" }}>
                   Update your credentials stored in MongoDB
                 </p>
               </div>
@@ -520,18 +520,18 @@ function UserProfile({ user, onLogout, onUpdateUser }) {
         <div style={{ overflowX: "auto", marginTop: "16px" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
-              <tr style={{ background: "rgba(100, 116, 139, 0.12)", textAlign: "left" }}>
-                <th style={{ padding: "10px", borderRadius: "6px 0 0 6px", color: "#0f172a", fontWeight: "700" }}>Name</th>
-                <th style={{ padding: "10px", color: "#0f172a", fontWeight: "700" }}>Email</th>
-                <th style={{ padding: "10px", color: "#0f172a", fontWeight: "700" }}>Role</th>
-                <th style={{ padding: "10px", textAlign: "right", borderRadius: "0 6px 6px 0", color: "#0f172a", fontWeight: "700" }}>Action</th>
+              <tr style={{ background: "rgba(100, 116, 139, 0.1)", textAlign: "left", color: "#000000", fontWeight: "700" }}>
+                <th style={{ padding: "10px", borderRadius: "6px 0 0 6px", color: "#000000", fontWeight: "700" }}>Name</th>
+                <th style={{ padding: "10px", color: "#000000", fontWeight: "700" }}>Email</th>
+                <th style={{ padding: "10px", color: "#000000", fontWeight: "700" }}>Role</th>
+                <th style={{ padding: "10px", textAlign: "right", borderRadius: "0 6px 6px 0", color: "#000000", fontWeight: "700" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {teamUsers.map((u) => (
                 <tr key={u._id} style={{ borderBottom: "1px solid rgba(100, 116, 139, 0.15)" }}>
-                  <td style={{ padding: "12px 10px", fontWeight: "600" }}>{u.name}</td>
-                  <td style={{ padding: "12px 10px", color: "#64748b" }}>{u.email}</td>
+                  <td style={{ padding: "12px 10px", fontWeight: "700", color: "#000000" }}>{u.name}</td>
+                  <td style={{ padding: "12px 10px", color: "#000000", fontWeight: "700" }}>{u.email}</td>
                   <td style={{ padding: "12px 10px" }}>
                     <span style={{ padding: "3px 8px", background: "rgba(37, 99, 235, 0.1)", color: "#2563eb", borderRadius: "4px", fontSize: "12px" }}>
                       {u.role || "Analyst"}

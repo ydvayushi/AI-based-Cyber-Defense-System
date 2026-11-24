@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { FaFileAlt, FaRedo, FaShieldAlt } from "react-icons/fa";
+import { FaFileAlt, FaRedo, FaShieldAlt, FaDownload } from "react-icons/fa";
 import "./AiAnalysisView.css";
 
 /**
@@ -305,6 +305,36 @@ export default function AiAnalysisView({
   const strokeDashoffset =
     circumference - (analysisData.confidence / 100) * circumference;
 
+  const handleExportReport = () => {
+    const timestamp = new Date().toISOString().replace("T", " ").substring(0, 19);
+    let csvContent = `AI CYBER DEFENSE INCIDENT REPORT\n`;
+    csvContent += `Generated At: ${timestamp}\n`;
+    csvContent += `System: ${analysisData.title}\n`;
+    csvContent += `Model Confidence: ${analysisData.confidence}%\n`;
+    csvContent += `Decision Support Status: ${analysisData.statusText}\n\n`;
+
+    csvContent += `--- RISK & CONSISTENCY FACTORS ---\n`;
+    csvContent += `Factor,Severity,Risk Score (%),Description\n`;
+    analysisData.riskFactors.forEach((f) => {
+      csvContent += `"${f.name}","${f.severity}","${f.pct}%","${f.desc.replace(/"/g, '""')}"\n`;
+    });
+
+    csvContent += `\n--- EXPLAINABLE AI (XAI) FEATURE IMPACTS ---\n`;
+    csvContent += `Network Feature,Contribution Weight,Impact Note\n`;
+    analysisData.xaiFeatures.forEach((feat) => {
+      csvContent += `"${feat.name}","${feat.pct}%","${feat.impact}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `SOC_Incident_Report_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="ai-analysis-container">
       {/* TOP HEADER / ACTION BAR */}
@@ -319,6 +349,15 @@ export default function AiAnalysisView({
         </div>
 
         <div className="ai-analysis-header-right">
+          <button
+            className="ai-analysis-export-btn"
+            onClick={handleExportReport}
+            title="Download CSV Incident & Verification Report"
+          >
+            <FaDownload />
+            Export Report
+          </button>
+
           <button
             className="ai-analysis-rerun-btn"
             onClick={onRerun || (() => {})}

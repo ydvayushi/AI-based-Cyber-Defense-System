@@ -19,6 +19,12 @@ const JWT_SECRET = process.env.JWT_SECRET || "cyber_defence_super_secret_key_202
 app.use(cors());
 app.use(express.json());
 
+// Serve static frontend assets if built
+const frontendDist = path.join(__dirname, "..", "frontend", "dist");
+if (fs.existsSync(frontendDist)) {
+    app.use(express.static(frontendDist));
+}
+
 // ==============================
 // MongoDB Connection with Resilient Fallback
 // ==============================
@@ -461,7 +467,7 @@ app.put("/api/auth/profile", async (req, res) => {
 // ==============================
 // Basic Status Routes
 // ==============================
-app.get("/", (req, res) => {
+app.get("/api/health", (req, res) => {
     res.json({
         message: "AI Based Cyber Defence Backend is running!",
         database: isDbConnected ? "MongoDB Connected" : "In-Memory Store Active"
@@ -850,6 +856,16 @@ app.get("/api/model-info", (req, res) => {
         ...modelInfo
     });
 });
+
+// SPA Fallback: serve frontend index.html for all non-API client-side routes
+if (fs.existsSync(frontendDist)) {
+    app.use((req, res, next) => {
+        if (req.method === "GET" && !req.path.startsWith("/api")) {
+            return res.sendFile(path.join(frontendDist, "index.html"));
+        }
+        next();
+    });
+}
 
 // Start server
 app.listen(PORT, () => {
